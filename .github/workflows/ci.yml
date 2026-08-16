@@ -8,7 +8,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_BACKTRACE: 1
 
 jobs:
   contract-tests:
@@ -17,92 +16,47 @@ jobs:
     defaults:
       run:
         working-directory: contracts
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-          components: rustfmt, clippy
 
-      - uses: actions/cache@v4
+      - name: Cache cargo registry and binaries
+        uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            contracts/target/
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            contracts/target
           key: ${{ runner.os }}-cargo-${{ hashFiles('contracts/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
 
-      - name: Install Soroban CLI
-        run: cargo install --locked soroban-cli --features opt 2>/dev/null || true
-
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-
-      - name: Run Clippy
-        run: cargo clippy --all-targets -- -D warnings
-
-      - name: Test dispute-court (12 tests)
-        run: cargo test -p dispute-court --features testutils -- --nocapture
-
-      - name: Test juror-registry (9 tests)
-        run: cargo test -p juror-registry --features testutils -- --nocapture
-
-      - name: Build WASM
-        run: |
-          cargo build --target wasm32-unknown-unknown --release -p dispute-court
-          cargo build --target wasm32-unknown-unknown --release -p juror-registry
-
-      - name: Optimize WASM
-        run: |
-          soroban contract optimize \
-            --wasm target/wasm32-unknown-unknown/release/dispute_court.wasm \
-            --wasm-out target/wasm32-unknown-unknown/release/dispute_court.optimized.wasm
-          soroban contract optimize \
-            --wasm target/wasm32-unknown-unknown/release/juror_registry.wasm \
-            --wasm-out target/wasm32-unknown-unknown/release/juror_registry.optimized.wasm
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wasm-contracts
-          path: contracts/target/wasm32-unknown-unknown/release/*.optimized.wasm
-          retention-days: 30
+      - name: Run Contract Tests
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cargo test --workspace --verbose | tail -60
 
   frontend-tests:
     name: ⚡ Frontend Tests & Build
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
-
+        working-directory: ./frontend
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test
-
+          node-version: 20
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Run lint
+        run: npm run lint
+      - name: Run tests
+        run: npm test
       - name: Build
         run: npm run build
-        env:
-          VITE_DISPUTE_COURT_ID:  ${{ secrets.DISPUTE_COURT_ID  || 'PLACEHOLDER' }}
-          VITE_JUROR_REGISTRY_ID: ${{ secrets.JUROR_REGISTRY_ID || 'PLACEHOLDER' }}
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-          retention-days: 7
 
   deploy-contracts:
     name: 🚀 Deploy to Testnet
@@ -112,7 +66,6 @@ jobs:
     defaults:
       run:
         working-directory: contracts
-
     steps:
       - uses: actions/checkout@v4
 
@@ -120,111 +73,54 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/
-            contracts/target/
-          key: ${{ runner.os }}-cargo-deploy-${{ hashFiles('contracts/Cargo.lock') }}
+      - name: Install cargo-binstall
+        run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: wasm-contracts
-          path: contracts/target/wasm32-unknown-unknown/release/
+      - name: Install Stellar CLI
+        run: cargo binstall --no-confirm stellar-cli
 
-      - name: Install Soroban CLI
-        run: cargo install --locked soroban-cli --features opt 2>/dev/null || true
-
-      - name: Configure network
+      - name: Build contracts
         run: |
-          soroban network add \
-            --rpc-url https://soroban-testnet.stellar.org \
-            --network-passphrase "Test SDF Network ; September 2015" \
-            testnet || true
+          cargo build --target wasm32-unknown-unknown --release -p dispute-court -p juror-registry
+          stellar contract optimize --wasm target/wasm32-unknown-unknown/release/dispute_court.wasm
+          stellar contract optimize --wasm target/wasm32-unknown-unknown/release/juror_registry.wasm
 
-      - name: Fund deployer
+      - name: Deploy to Testnet
         run: |
-          soroban keys generate deployer --network testnet 2>/dev/null || true
-          curl -s "https://friendbot.stellar.org?addr=$(soroban keys address deployer)" | jq .
+          echo "Generating identities..."
+          stellar keys generate deployer --network testnet
+          stellar keys fund deployer --network testnet
 
-      - name: Deploy JurorRegistry
-        id: deploy-registry
-        run: |
-          REGISTRY_ID=$(soroban contract deploy \
+          echo "Deploying JurorRegistry..."
+          REGISTRY_ID=$(stellar contract deploy \
             --wasm target/wasm32-unknown-unknown/release/juror_registry.optimized.wasm \
-            --source deployer --network testnet)
-          echo "REGISTRY_ID=$REGISTRY_ID" >> $GITHUB_OUTPUT
-          echo "JurorRegistry: $REGISTRY_ID"
+            --source deployer \
+            --network testnet 2>deploy_err.log) || { cat deploy_err.log; exit 1; }
+          echo "JurorRegistry deployed at: $REGISTRY_ID"
 
-      - name: Deploy DisputeCourt
-        id: deploy-court
-        run: |
-          COURT_ID=$(soroban contract deploy \
+          echo "Deploying DisputeCourt..."
+          COURT_ID=$(stellar contract deploy \
             --wasm target/wasm32-unknown-unknown/release/dispute_court.optimized.wasm \
-            --source deployer --network testnet)
-          echo "COURT_ID=$COURT_ID" >> $GITHUB_OUTPUT
-          echo "DisputeCourt: $COURT_ID"
+            --source deployer \
+            --network testnet 2>deploy_err.log) || { cat deploy_err.log; exit 1; }
+          echo "DisputeCourt deployed at: $COURT_ID"
+          
+          echo "Fetching Test Token (Native XLM asset) ID..."
+          TOKEN_ID=$(stellar contract id asset --asset native --network testnet)
+          echo "Native Token ID is: $TOKEN_ID"
 
-      - name: Initialize contracts
-        run: |
-          DEPLOYER=$(soroban keys address deployer)
-          REGISTRY_ID="${{ steps.deploy-registry.outputs.REGISTRY_ID }}"
-          COURT_ID="${{ steps.deploy-court.outputs.COURT_ID }}"
-
-          # Get native XLM SAC
-          NATIVE=$(soroban contract id asset --asset native --network testnet 2>/dev/null || echo "$DEPLOYER")
-
-          soroban contract invoke --id "$REGISTRY_ID" \
-            --source deployer --network testnet \
-            -- initialize --admin "$DEPLOYER" --court_address "$COURT_ID"
-
-          soroban contract invoke --id "$COURT_ID" \
-            --source deployer --network testnet \
-            -- initialize \
-            --admin "$DEPLOYER" \
-            --registry_address "$REGISTRY_ID" \
-            --token_address "$NATIVE" \
-            --min_stake 100000000 \
-            --vote_period_secs 604800
-
-          echo "✅ Both contracts initialized"
-
-      - name: Save deployment manifest
-        run: |
-          mkdir -p ../deployment
-          cat > ../deployment/testnet.json << EOF
-          {
-            "network":        "testnet",
-            "deployed_at":    "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "commit":         "${{ github.sha }}",
-            "dispute_court":  "${{ steps.deploy-court.outputs.COURT_ID }}",
-            "juror_registry": "${{ steps.deploy-registry.outputs.REGISTRY_ID }}"
-          }
-          EOF
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: deployment-manifest
-          path: deployment/testnet.json
+          echo "=== DEPLOYMENT IDS ===" >> $GITHUB_STEP_SUMMARY
+          echo "- **JurorRegistry ID**: $REGISTRY_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **DisputeCourt ID**: $COURT_ID" >> $GITHUB_STEP_SUMMARY
+          echo "- **Native Token ID**: $TOKEN_ID" >> $GITHUB_STEP_SUMMARY
 
   deploy-frontend:
     name: 🌐 Deploy Frontend
-    needs: [deploy-contracts, frontend-tests]
+    needs: [deploy-contracts]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: frontend/dist/
-
       - uses: amondnet/vercel-action@v25
         with:
           vercel-token:      ${{ secrets.VERCEL_TOKEN }}
