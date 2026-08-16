@@ -9,5 +9,6 @@
     "noFallthroughCasesInSwitch": true, "baseUrl": ".", "paths": { "@/*": ["src/*"] }
   },
   "include": ["src"],
+  "exclude": ["src/test", "**/*.test.tsx", "**/*.test.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
