@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: #0A0608;
+    color: #D4C9B0;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Court texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(123,29,58,0.025) 0px, rgba(123,29,58,0.025) 1px,
+      transparent 1px, transparent 8px
+    );
+    pointer-events: none; z-index: 0;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: #0A0608; }
+  ::-webkit-scrollbar-thumb { background: #221520; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #7B1D3A; }
+}
+
+@layer components {
+
+  /* ── Court card ─────────────────────────────────────────────────────────── */
+  .court-card {
+    @apply relative overflow-hidden rounded border border-white/[0.06];
+    background: linear-gradient(160deg, #1A1018 0%, #120C10 100%);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .court-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.015) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* ── Case file card — looks like a legal document ───────────────────────── */
+  .case-card {
+    @apply relative rounded border transition-all duration-200;
+    background: linear-gradient(160deg, #1A1018 0%, #120C10 100%);
+    border-color: rgba(184,137,42,0.15);
+    box-shadow: 0 0 0 1px rgba(184,137,42,0.05), 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .case-card:hover {
+    border-color: rgba(184,137,42,0.3);
+    box-shadow: 0 0 0 1px rgba(184,137,42,0.1), 0 12px 40px rgba(0,0,0,0.7);
+    transform: translateY(-1px);
+  }
+
+  /* Corner ornaments */
+  .case-card::before, .case-card::after {
+    content: '';
+    position: absolute;
+    width: 10px; height: 10px;
+  }
+  .case-card::before { top: 5px; left: 5px; border-top: 1px solid rgba(184,137,42,0.35); border-left: 1px solid rgba(184,137,42,0.35); }
+  .case-card::after  { bottom: 5px; right: 5px; border-bottom: 1px solid rgba(184,137,42,0.35); border-right: 1px solid rgba(184,137,42,0.35); }
+
+  /* ── Buttons ────────────────────────────────────────────────────────────── */
+  .btn-brass {
+    @apply relative overflow-hidden rounded px-5 py-2.5 font-body font-semibold text-sm transition-all duration-200;
+    background: linear-gradient(135deg, #B8892A, #D4A843);
+    color: #0A0608;
+    box-shadow: 0 0 0 1px rgba(184,137,42,0.5), 0 0 16px rgba(184,137,42,0.15);
+  }
+  .btn-brass:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(212,168,67,0.7), 0 0 24px rgba(184,137,42,0.3); }
+  .btn-brass:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-burgundy {
+    @apply relative overflow-hidden rounded px-5 py-2.5 font-body font-semibold text-sm transition-all duration-200;
+    background: #7B1D3A;
+    color: #EDE8DC;
+    box-shadow: 0 0 0 1px rgba(123,29,58,0.6), 0 0 16px rgba(123,29,58,0.2);
+  }
+  .btn-burgundy:hover { background: #A0284E; transform: translateY(-1px); }
+
+  .btn-ghost {
+    @apply rounded border border-white/10 px-5 py-2.5 font-body text-sm text-muted transition-all duration-200;
+  }
+  .btn-ghost:hover { @apply border-brass/30 text-parchment; }
+
+  /* ── Input ──────────────────────────────────────────────────────────────── */
+  .court-input {
+    @apply w-full rounded border border-white/10 bg-black/20 px-4 py-2.5 font-body text-sm text-ivory placeholder:text-muted/50 transition-all duration-200;
+  }
+  .court-input:focus { @apply outline-none border-brass/40 ring-1 ring-brass/20; }
+
+  /* ── Tier badge ─────────────────────────────────────────────────────────── */
+  .tier-badge {
+    @apply inline-flex items-center gap-1.5 rounded px-3 py-1 text-xs font-display;
+  }
+
+  /* ── Status pill ────────────────────────────────────────────────────────── */
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-mono font-medium;
+  }
+
+  /* ── Case number label ──────────────────────────────────────────────────── */
+  .case-label {
+    @apply text-[10px] font-mono uppercase tracking-[0.15em] text-muted;
+  }
+}
+
+/* Brass gradient text */
+.text-brass-gradient {
+  background: linear-gradient(135deg, #B8892A 0%, #D4A843 50%, #B8892A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Verdict stamp */
+.verdict-stamp {
+  display: inline-block;
+  border: 2px solid;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'Libre Baskerville', serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+  opacity: 0.85;
+}
+
+/* Vote bar */
+.vote-bar {
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.05);
+}
+
+/* Scales of justice SVG animation */
+.scales-left  { animation: sway-left  4s ease-in-out infinite; transform-origin: top center; }
+.scales-right { animation: sway-right 4s ease-in-out infinite; transform-origin: top center; }
+
+@keyframes sway-left  { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes sway-right { 0%,100% { transform: rotate(5deg);  } 50% { transform: rotate(-5deg); } }
