@@ -28,12 +28,21 @@ export default function FileCase() {
 
     setSubmitting(true)
     try {
-      await new Promise(r => setTimeout(r, 2200))
-      const id   = String(Math.floor(Math.random() * 9000 + 1000))
-      const hash = Array.from({ length: 64 }, () => '0123456789abcdef'[Math.floor(Math.random()*16)]).join('')
-      setCaseId(id)
+      const m = await import('../lib/soroban')
+      const hash = await m.fileDispute(
+        pubKey, 
+        form.respondent, 
+        form.title, 
+        form.description, 
+        form.category, 
+        form.evidence || 'ipfs://none', 
+        form.stakePerJuror
+      )
+      
+      const total = await m.getTotalDisputes(pubKey)
+      setCaseId(String(total))
       setTxHash(hash)
-      addToast('success', `Case #${id} filed on-chain. Jurors may now vote.`)
+      addToast('success', `Case filed on-chain!`, { label: 'View Tx on Explorer', href: `https://stellar.expert/explorer/testnet/tx/${hash}` })
     } catch (e) {
       addToast('error', `Failed: ${e instanceof Error ? e.message : 'Unknown'}`)
     } finally {

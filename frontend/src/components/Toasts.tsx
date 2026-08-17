@@ -11,7 +11,15 @@ export default function Toasts() {
           {n.type === 'success' && <CheckCircle size={15} style={{ color: '#27AE60' }} className="shrink-0 mt-0.5" />}
           {n.type === 'error'   && <XCircle     size={15} className="text-ruby shrink-0 mt-0.5" />}
           {n.type === 'info'    && <Info         size={15} className="text-brass shrink-0 mt-0.5" />}
-          <p className="text-sm text-ivory flex-1 leading-snug">{n.message}</p>
+          <div className="flex-1">
+            <p className="text-sm text-ivory leading-snug">{n.message}</p>
+            {n.link && (
+              <a href={n.link.href} target="_blank" rel="noopener noreferrer" 
+                 className="inline-flex items-center gap-1 mt-1 text-[11px] font-mono text-emerald hover:underline">
+                {n.link.label}
+              </a>
+            )}
+          </div>
           <button onClick={() => removeToast(n.id)} className="text-muted hover:text-ivory shrink-0"><X size={13} /></button>
         </div>
       ))}

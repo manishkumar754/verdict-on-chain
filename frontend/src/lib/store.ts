@@ -36,11 +36,22 @@ export interface JurorProfile {
   last_active: number
 }
 
-interface Toast { id: string; type: 'success' | 'error' | 'info'; message: string }
+/** A toast can carry a plain string or a full ReactNode (rendered via dangerouslySetInnerHTML trick) */
+interface Toast {
+  id: string
+  type: 'success' | 'error' | 'info'
+  message: string
+  /** Optional link to display inside the toast (e.g. Stellar Explorer) */
+  link?: { label: string; href: string }
+}
 
 interface VerdictStore {
-  pubKey: string; secretKey: string; isConnected: boolean
-  setWallet: (pub: string, sec: string) => void
+  pubKey: string
+  isConnected: boolean
+  balance: string
+
+  setWallet: (pub: string) => void
+  setBalance: (b: string) => void
   disconnect: () => void
 
   disputes: Dispute[]
@@ -54,15 +65,21 @@ interface VerdictStore {
   setTab: (t: 'docket' | 'file' | 'mydisputes' | 'profile') => void
 
   toasts: Toast[]
-  addToast: (type: Toast['type'], msg: string) => void
+  addToast: (type: Toast['type'], msg: string, link?: Toast['link']) => void
   removeToast: (id: string) => void
 }
 
 export const useVerdictStore = create<VerdictStore>((set, get) => ({
-  pubKey: '', secretKey: '', isConnected: false,
-  setWallet: (pub, sec) => set({ pubKey: pub, secretKey: sec, isConnected: true }),
-  disconnect: () => set({ pubKey: '', secretKey: '', isConnected: false, jurorProfile: null }),
+  // ── Wallet ──────────────────────────────────────────────────────────────────
+  pubKey: '',
+  isConnected: false,
+  balance: '—',
 
+  setWallet: (pub) => set({ pubKey: pub, isConnected: true }),
+  setBalance: (b) => set({ balance: b }),
+  disconnect: () => set({ pubKey: '', isConnected: false, balance: '—', jurorProfile: null }),
+
+  // ── Disputes ─────────────────────────────────────────────────────────────────
   disputes: [],
   setDisputes: (d) => set({ disputes: d }),
   upsertDispute: (d) => set(s => {
@@ -71,17 +88,20 @@ export const useVerdictStore = create<VerdictStore>((set, get) => ({
     return { disputes: [d, ...s.disputes] }
   }),
 
+  // ── Profile ──────────────────────────────────────────────────────────────────
   jurorProfile: null,
   setJurorProfile: (p) => set({ jurorProfile: p }),
 
+  // ── Navigation ───────────────────────────────────────────────────────────────
   activeTab: 'docket',
   setTab: (t) => set({ activeTab: t }),
 
+  // ── Toasts ───────────────────────────────────────────────────────────────────
   toasts: [],
-  addToast: (type, message) => {
+  addToast: (type, message, link?) => {
     const id = Math.random().toString(36).slice(2)
-    set(s => ({ toasts: [...s.toasts, { id, type, message }] }))
-    setTimeout(() => get().removeToast(id), 5000)
+    set(s => ({ toasts: [...s.toasts, { id, type, message, link }] }))
+    setTimeout(() => get().removeToast(id), 8000)
   },
   removeToast: (id) => set(s => ({ toasts: s.toasts.filter(n => n.id !== id) })),
 }))

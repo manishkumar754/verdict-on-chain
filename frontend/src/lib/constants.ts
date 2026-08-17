@@ -5,6 +5,8 @@ export const FRIENDBOT_URL        = 'https://friendbot.stellar.org'
 export const DISPUTE_COURT_ID     = import.meta.env.VITE_DISPUTE_COURT_ID    || ''
 export const JUROR_REGISTRY_ID    = import.meta.env.VITE_JUROR_REGISTRY_ID   || ''
 
+export const getExplorerTxLink = (hash: string) => `https://stellar.expert/explorer/testnet/tx/${hash}`
+
 export const JUROR_TIER_META: Record<string, { label: string; color: string; glyph: string; min: number; desc: string }> = {
   Observer:      { label: 'Observer',       color: '#6B6080', glyph: '○',   min: 0,    desc: 'New to the court' },
   Associate:     { label: 'Associate',      color: '#7A8A6E', glyph: '◎',   min: 150,  desc: 'Building a track record' },

@@ -1,29 +1,42 @@
-import { useState } from 'react'
-import { Keypair } from '@stellar/stellar-sdk'
+import { useState, useEffect } from 'react'
 import { Eye, EyeOff, Loader2, Copy, ExternalLink, TrendingUp, CheckCircle, XCircle } from 'lucide-react'
 import { useVerdictStore } from '../lib/store'
 import TierBadge from '../components/TierBadge'
 import ScalesIcon from '../components/ScalesIcon'
-import { MOCK_JURORS, truncAddr, formatXLM } from '../lib/mockData'
+import { truncAddr, formatXLM } from '../lib/mockData'
 import { JUROR_TIER_META } from '../lib/constants'
 
 export default function JurorProfile() {
-  const { isConnected, pubKey, setWallet, disconnect, setJurorProfile, jurorProfile, addToast } = useVerdictStore()
-  const [secretInput, setSecretInput] = useState('')
-  const [showSecret,  setShowSecret]  = useState(false)
-  const [loading,     setLoading]     = useState(false)
+  const { isConnected, pubKey, setWallet, setBalance, disconnect, setJurorProfile, jurorProfile, addToast } = useVerdictStore()
+  const [loading, setLoading] = useState(false)
+
+  // Fetch real juror profile on load if connected
+  useEffect(() => {
+    if (!isConnected || !pubKey) return
+    import('../lib/soroban').then(async (m) => {
+      try {
+        const p = await m.getJurorProfile(pubKey)
+        setJurorProfile(p)
+      } catch (e) {
+        console.error('Failed to load profile', e)
+      }
+    })
+  }, [isConnected, pubKey, setJurorProfile])
 
   const handleConnect = async () => {
     setLoading(true)
     try {
-      const kp = secretInput.trim() ? Keypair.fromSecret(secretInput.trim()) : Keypair.random()
-      if (!secretInput.trim()) addToast('info', 'New testnet keypair generated — save your secret key!')
-      setWallet(kp.publicKey(), kp.secret())
-      const mock = MOCK_JURORS[0]
-      setJurorProfile({ ...mock, juror: kp.publicKey() })
-      addToast('success', 'Juror ID connected!')
-    } catch { addToast('error', 'Invalid secret key') }
-    finally  { setLoading(false); setSecretInput('') }
+      const { connectWallet, fetchBalance } = await import('../lib/wallet')
+      const address = await connectWallet()
+      setWallet(address)
+      const bal = await fetchBalance(address)
+      setBalance(bal)
+      addToast('success', 'Wallet connected!')
+    } catch (e: any) { 
+      addToast('error', e.message || 'Failed to connect wallet') 
+    } finally { 
+      setLoading(false) 
+    }
   }
 
   const copy = (s: string) => { navigator.clipboard.writeText(s); addToast('info', 'Copied') }
@@ -36,21 +49,20 @@ export default function JurorProfile() {
           <h1 className="font-display text-3xl text-ivory mb-2">Juror ID</h1>
           <p className="text-sm text-muted">Connect your wallet to participate as a juror, track your accuracy, and earn staking rewards.</p>
         </div>
-        <div className="case-card p-6 space-y-4">
-          <div>
-            <label className="case-label block mb-2">Secret Key</label>
-            <div className="relative">
-              <input type={showSecret ? 'text' : 'password'} className="court-input pr-10 font-mono text-xs" placeholder="S… (empty to generate)" value={secretInput} onChange={e => setSecretInput(e.target.value)} />
-              <button onClick={() => setShowSecret(s => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-ivory">
-                {showSecret ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
-          </div>
-          <div className="text-xs text-muted bg-black/20 rounded p-3 border border-white/[0.05]">⚠ Testnet only. Never enter a mainnet secret key.</div>
+        <div className="case-card p-6 text-center space-y-4">
           <button onClick={handleConnect} disabled={loading} className="btn-brass w-full flex items-center justify-center gap-2 py-3">
-            {loading ? <><Loader2 size={14} className="animate-spin" />Connecting…</> : secretInput ? 'Connect Wallet' : 'Generate & Connect'}
+            {loading ? <><Loader2 size={14} className="animate-spin" />Connecting…</> : 'Connect Freighter'}
           </button>
         </div>
+      </div>
+    )
+  }
+
+  // Fallback while loading the actual profile
+  if (!jurorProfile) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-20 flex justify-center">
+        <Loader2 size={32} className="animate-spin text-brass" />
       </div>
     )
   }

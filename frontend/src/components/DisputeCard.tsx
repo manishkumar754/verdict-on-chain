@@ -11,21 +11,32 @@ import { clsx } from 'clsx'
 export default function DisputeCard({ dispute, compact = false }: { dispute: Dispute; compact?: boolean }) {
   const { isConnected, pubKey, addToast } = useVerdictStore()
   const [selectedSide, setSelectedSide] = useState<number | null>(null)
-  const [voting, setVoting] = useState(false)
-  const [voted,  setVoted]  = useState(false)
+  const [votingFor, setVotingFor] = useState<number | null>(null)
+  const [hasVoted, setHasVoted] = useState(false)
 
   const isParty    = pubKey === dispute.claimant || pubKey === dispute.respondent
-  const canVote    = isConnected && !isParty && dispute.status === 'Voting' && !voted
+  const canVote    = isConnected && !isParty && dispute.status === 'Voting' && !hasVoted
   const isResolved = dispute.status === 'Resolved'
 
-  const handleVote = async () => {
-    if (!selectedSide) { addToast('error', 'Select a side to cast your vote'); return }
-    setVoting(true)
-    await new Promise(r => setTimeout(r, 1800))
-    setVoting(false)
-    setVoted(true)
-    const label = VOTE_OPTIONS.find(o => o.side === selectedSide)?.label || 'your choice'
-    addToast('success', `Vote cast for "${label}". ${formatXLM(dispute.stake_per_juror)} staked on-chain.`)
+  const handleVote = async (side: 1 | 2 | 3) => {
+    if (!isConnected || !pubKey) { addToast('error', 'Connect your Juror ID to vote'); return }
+    if (isParty) { addToast('error', 'You cannot vote on your own case'); return }
+    if (hasVoted) return
+    
+    setVotingFor(side)
+    try {
+      const m = await import('../lib/soroban')
+      const hash = await m.castVote(pubKey, dispute.id, side)
+      setHasVoted(true)
+      addToast('success', `Vote submitted! Stake of ${dispute.stake_per_juror} XLM locked.`, {
+        label: 'View Tx on Explorer',
+        href: `https://stellar.expert/explorer/testnet/tx/${hash}`
+      })
+    } catch (e: any) {
+      addToast('error', `Failed to vote: ${e.message || 'Unknown'}`)
+    } finally {
+      setVotingFor(null)
+    }
   }
 
   return (
@@ -109,7 +120,7 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
       </div>
 
       {/* Voting interface */}
-      {!compact && canVote && !voted && (
+      {!compact && canVote && !hasVoted && (
         <div className="pt-4 border-t border-white/[0.05] space-y-3">
           <div className="case-label">Cast Your Vote</div>
           <div className="grid grid-cols-3 gap-2">
@@ -135,12 +146,12 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
             ))}
           </div>
           <button
-            onClick={handleVote}
-            disabled={voting || !selectedSide}
+            onClick={() => { if (selectedSide) handleVote(selectedSide as 1|2|3) }}
+            disabled={votingFor !== null || !selectedSide}
             className={clsx('btn-brass w-full flex items-center justify-center gap-2 py-2',
-              (!selectedSide || voting) && 'opacity-50 cursor-not-allowed')}
+              (!selectedSide || votingFor !== null) && 'opacity-50 cursor-not-allowed')}
           >
-            {voting
+            {votingFor !== null
               ? <><Loader2 size={13} className="animate-spin" />Submitting vote…</>
               : 'Submit Vote & Stake'
             }
@@ -148,7 +159,7 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
         </div>
       )}
 
-      {voted && (
+      {hasVoted && (
         <div className="pt-3 border-t border-white/[0.05] text-center text-xs text-muted font-mono">
           ✓ Vote recorded on-chain
         </div>

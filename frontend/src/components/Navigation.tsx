@@ -12,7 +12,7 @@ const TABS = [
 ] as const
 
 export default function Navigation() {
-  const { activeTab, setTab, isConnected, pubKey, disconnect } = useVerdictStore()
+  const { activeTab, setTab, isConnected, pubKey, balance, disconnect } = useVerdictStore()
   return (
     <nav className="sticky top-0 z-40 border-b border-white/[0.05]"
          style={{ background: 'rgba(10,6,8,0.93)', backdropFilter: 'blur(20px)' }}>
@@ -48,14 +48,32 @@ export default function Navigation() {
         {/* Wallet */}
         {isConnected ? (
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2 text-xs border border-white/[0.06] rounded px-3 py-1.5 bg-black/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
-              <span className="font-mono text-muted">{truncAddr(pubKey)}</span>
+            <div className="hidden sm:flex items-center gap-3 text-xs border border-white/[0.06] rounded px-3 py-1.5 bg-black/20">
+              <div className="flex items-center gap-1.5 border-r border-white/10 pr-3 text-brass-gradient font-mono">
+                {balance} XLM
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
+                <span className="font-mono text-muted">{pubKey.slice(0, 5)}…{pubKey.slice(-4)}</span>
+              </div>
             </div>
-            <button onClick={disconnect} className="btn-ghost text-xs py-1.5 px-3">Disconnect</button>
+            <button onClick={() => {
+              import('../lib/wallet').then(m => m.disconnectWallet())
+              disconnect()
+            }} className="btn-ghost text-xs py-1.5 px-3">Disconnect</button>
           </div>
         ) : (
-          <button onClick={() => setTab('profile')} className="btn-brass text-xs py-1.5 px-4">Connect Wallet</button>
+          <button onClick={async () => {
+            try {
+              const { connectWallet, fetchBalance } = await import('../lib/wallet')
+              const address = await connectWallet()
+              useVerdictStore.getState().setWallet(address)
+              const bal = await fetchBalance(address)
+              useVerdictStore.getState().setBalance(bal)
+            } catch (e) {
+              console.error(e)
+            }
+          }} className="btn-brass text-xs py-1.5 px-4">Connect Wallet</button>
         )}
       </div>
 

@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { Search, Scale, Users, CheckCircle, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Search, Scale, Users, CheckCircle, Clock, Loader2 } from 'lucide-react'
 import DisputeCard from '../components/DisputeCard'
 import TierBadge from '../components/TierBadge'
 import ScalesIcon from '../components/ScalesIcon'
-import { MOCK_DISPUTES, MOCK_JURORS, truncAddr, formatXLM } from '../lib/mockData'
+import { MOCK_JURORS, truncAddr, formatXLM } from '../lib/mockData'
 import { useVerdictStore } from '../lib/store'
 import { DISPUTE_CATEGORIES } from '../lib/constants'
 import type { DisputeStatus } from '../lib/store'
@@ -16,19 +16,38 @@ const FILTERS: { label: string; value: DisputeStatus | 'all' }[] = [
 ]
 
 export default function Docket() {
-  const { setTab } = useVerdictStore()
+  const { setTab, disputes, setDisputes, pubKey } = useVerdictStore()
   const [search,   setSearch]   = useState('')
   const [filter,   setFilter]   = useState<DisputeStatus | 'all'>('all')
   const [category, setCategory] = useState('')
+  const [loading,  setLoading]  = useState(true)
 
-  const filtered = MOCK_DISPUTES.filter(d => {
+  useEffect(() => {
+    import('../lib/soroban').then(async m => {
+      try {
+        const total = await m.getTotalDisputes(pubKey || '')
+        const fetches = []
+        for (let i = 1; i <= total; i++) {
+          fetches.push(m.getDispute(pubKey || '', i))
+        }
+        const results = await Promise.all(fetches)
+        setDisputes(results.reverse()) // newest first
+      } catch (e) {
+        console.error('Failed to load disputes', e)
+      } finally {
+        setLoading(false)
+      }
+    })
+  }, [pubKey, setDisputes])
+
+  const filtered = disputes.filter(d => {
     const fStatus = filter === 'all' || d.status === filter
     const fCat    = !category || d.category === category
     const fSearch = !search || d.title.toLowerCase().includes(search.toLowerCase())
     return fStatus && fCat && fSearch
   })
 
-  const totalStaked = MOCK_DISPUTES.reduce((s, d) => s + d.stake_per_juror * d.total_jurors, 0)
+  const totalStaked = disputes.reduce((s, d) => s + Number(d.stake_per_juror) * Number(d.total_jurors), 0)
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-20 pt-8 space-y-10">
@@ -58,8 +77,8 @@ export default function Docket() {
       {/* Stats */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { icon: Scale,       label: 'Active Cases',   value: MOCK_DISPUTES.filter(d => d.status === 'Voting').length },
-          { icon: CheckCircle, label: 'Cases Resolved', value: MOCK_DISPUTES.filter(d => d.status === 'Resolved').length },
+          { icon: Scale,       label: 'Active Cases',   value: disputes.filter(d => d.status === 'Voting').length },
+          { icon: CheckCircle, label: 'Cases Resolved', value: disputes.filter(d => d.status === 'Resolved').length },
           { icon: Users,       label: 'Active Jurors',  value: MOCK_JURORS.length + 89 },
           { icon: Clock,       label: 'Total Staked',   value: formatXLM(totalStaked) },
         ].map(s => {
@@ -119,12 +138,17 @@ export default function Docket() {
           </div>
         </div>
         <div className="space-y-4">
-          {filtered.map(d => <DisputeCard key={d.id} dispute={d} />)}
-          {filtered.length === 0 && (
+          {loading ? (
+            <div className="court-card p-12 flex justify-center">
+              <Loader2 size={24} className="animate-spin text-brass" />
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="court-card p-12 text-center">
               <p className="font-display text-lg text-ivory mb-2">No cases found</p>
               <p className="text-sm text-muted">Adjust your filters or file a new dispute.</p>
             </div>
+          ) : (
+            filtered.map(d => <DisputeCard key={d.id} dispute={d} />)
           )}
         </div>
       </section>
