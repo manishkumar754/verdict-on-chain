@@ -5,7 +5,7 @@
  */
 
 import {
-  SorobanRpc,
+  rpc,
   TransactionBuilder,
   Networks,
   BASE_FEE,
@@ -19,7 +19,7 @@ import { SOROBAN_RPC_URL, NETWORK_PASSPHRASE, DISPUTE_COURT_ID, JUROR_REGISTRY_I
 import { signTransaction } from './wallet'
 import type { Dispute, JurorProfile } from './store'
 
-const server = new SorobanRpc.Server(SOROBAN_RPC_URL)
+const server = new rpc.Server(SOROBAN_RPC_URL)
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -47,11 +47,11 @@ async function invokeContract(
 
   // Simulate to get the updated footprint
   const simResult = await server.simulateTransaction(tx)
-  if (SorobanRpc.Api.isSimulationError(simResult)) {
+  if (rpc.Api.isSimulationError(simResult)) {
     throw new Error(`Simulation failed: ${simResult.error}`)
   }
 
-  const preparedTx = SorobanRpc.assembleTransaction(tx, simResult).build()
+  const preparedTx = rpc.assembleTransaction(tx, simResult).build()
   const signedXdr = await signTransaction(preparedTx.toXDR(), sourcePublicKey)
 
   const submitResult = await server.sendTransaction(
@@ -67,8 +67,8 @@ async function invokeContract(
   for (let i = 0; i < 20; i++) {
     await new Promise(r => setTimeout(r, 3000))
     const status = await server.getTransaction(hash)
-    if (status.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS) return hash
-    if (status.status === SorobanRpc.Api.GetTransactionStatus.FAILED) {
+    if (status.status === rpc.Api.GetTransactionStatus.SUCCESS) return hash
+    if (status.status === rpc.Api.GetTransactionStatus.FAILED) {
       throw new Error('Transaction failed on-chain')
     }
   }
@@ -94,7 +94,7 @@ async function queryContract(
     .build()
 
   const sim = await server.simulateTransaction(tx)
-  if (SorobanRpc.Api.isSimulationError(sim)) {
+  if (rpc.Api.isSimulationError(sim)) {
     throw new Error(`Query failed: ${sim.error}`)
   }
   if (!sim.result) throw new Error('No result from query')

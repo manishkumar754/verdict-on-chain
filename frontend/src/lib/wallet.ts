@@ -8,11 +8,10 @@
 import {
   StellarWalletsKit,
   WalletNetwork,
-  WalletType,
   FREIGHTER_ID,
   FreighterModule,
 } from '@creit.tech/stellar-wallets-kit'
-import { Networks, SorobanRpc } from '@stellar/stellar-sdk'
+import { Networks, Horizon, rpc } from '@stellar/stellar-sdk'
 import { SOROBAN_RPC_URL, NETWORK_PASSPHRASE } from './constants'
 
 // ─── Wallet Kit singleton ─────────────────────────────────────────────────────
@@ -43,7 +42,7 @@ export function clearPersistedPubKey() {
 
 export async function connectWallet(): Promise<string> {
   await kit.openModal({
-    onWalletSelected: async (option: { id: WalletType }) => {
+    onWalletSelected: async (option: { id: string }) => {
       kit.setWallet(option.id)
     },
   })
@@ -66,8 +65,8 @@ export async function signTransaction(xdr: string, pubKey: string): Promise<stri
 
 export async function fetchBalance(pubKey: string): Promise<string> {
   try {
-    const server = new SorobanRpc.Server(SOROBAN_RPC_URL)
-    const account = await server.getAccount(pubKey)
+    const horizon = new Horizon.Server('https://horizon-testnet.stellar.org')
+    const account = await horizon.loadAccount(pubKey)
     const xlmBalance = account.balances.find(
       (b: { asset_type: string }) => b.asset_type === 'native'
     )

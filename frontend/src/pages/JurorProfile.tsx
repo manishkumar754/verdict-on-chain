@@ -3,7 +3,7 @@ import { Eye, EyeOff, Loader2, Copy, ExternalLink, TrendingUp, CheckCircle, XCir
 import { useVerdictStore } from '../lib/store'
 import TierBadge from '../components/TierBadge'
 import ScalesIcon from '../components/ScalesIcon'
-import { truncAddr, formatXLM } from '../lib/mockData'
+import { MOCK_JURORS, truncAddr, formatXLM } from '../lib/mockData'
 import { JUROR_TIER_META } from '../lib/constants'
 
 export default function JurorProfile() {
