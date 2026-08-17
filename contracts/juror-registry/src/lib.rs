@@ -2,7 +2,7 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype,
-    symbol_short, vec,
+    symbol_short,
     Address, Env, Symbol, Vec,
     log,
 };

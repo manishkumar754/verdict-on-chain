@@ -29,7 +29,7 @@ const REGISTRY:     Symbol = symbol_short!("REGISTRY");
 const TOKEN:        Symbol = symbol_short!("TOKEN");
 const NEXT_ID:      Symbol = symbol_short!("NEXT_ID");
 const MIN_STAKE:    Symbol = symbol_short!("MIN_STAKE");
-const VOTE_PERIOD:  Symbol = symbol_short!("VOTEPERIOD");
+const VOTE_PERIOD:  Symbol = symbol_short!("VOTE_PRD");
 
 #[contracttype]
 pub enum DataKey {
@@ -53,7 +53,7 @@ pub enum DisputeStatus {
 }
 
 #[contracttype]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Side {
     Claimant  = 1,
     Respondent = 2,
