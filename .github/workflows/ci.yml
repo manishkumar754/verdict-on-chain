@@ -120,17 +120,4 @@ jobs:
           echo "- **DisputeCourt ID**: $COURT_ID" >> $GITHUB_STEP_SUMMARY
           echo "- **Native Token ID**: $TOKEN_ID" >> $GITHUB_STEP_SUMMARY
 
-  deploy-frontend:
-    name: 🌐 Deploy Frontend
-    needs: [deploy-contracts]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: amondnet/vercel-action@v25
-        with:
-          vercel-token:      ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id:     ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: frontend
-          vercel-args: '--prod'
+
