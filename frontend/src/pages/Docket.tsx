@@ -41,7 +41,8 @@ export default function Docket() {
   }, [pubKey, setDisputes])
 
   const filtered = disputes.filter(d => {
-    const fStatus = filter === 'all' || d.status === filter
+    const statusStr = Array.isArray(d.status) ? d.status[0] : d.status
+    const fStatus = filter === 'all' || statusStr === filter
     const fCat    = !category || d.category === category
     const fSearch = !search || d.title.toLowerCase().includes(search.toLowerCase())
     return fStatus && fCat && fSearch
@@ -77,8 +78,8 @@ export default function Docket() {
       {/* Stats */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { icon: Scale,       label: 'Active Cases',   value: disputes.filter(d => d.status === 'Voting').length },
-          { icon: CheckCircle, label: 'Cases Resolved', value: disputes.filter(d => d.status === 'Resolved').length },
+          { icon: Scale,       label: 'Active Cases',   value: disputes.filter(d => (Array.isArray(d.status) ? d.status[0] : d.status) === 'Voting').length },
+          { icon: CheckCircle, label: 'Cases Resolved', value: disputes.filter(d => (Array.isArray(d.status) ? d.status[0] : d.status) === 'Resolved').length },
           { icon: Users,       label: 'Active Jurors',  value: MOCK_JURORS.length + 89 },
           { icon: Clock,       label: 'Total Staked',   value: formatXLM(totalStaked) },
         ].map(s => {

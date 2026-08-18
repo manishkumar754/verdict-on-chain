@@ -14,9 +14,10 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
   const [votingFor, setVotingFor] = useState<number | null>(null)
   const [hasVoted, setHasVoted] = useState(false)
 
+  const statusStr  = Array.isArray(dispute.status) ? dispute.status[0] : dispute.status
   const isParty    = pubKey === dispute.claimant || pubKey === dispute.respondent
-  const canVote    = isConnected && !isParty && dispute.status === 'Voting' && !hasVoted
-  const isResolved = dispute.status === 'Resolved'
+  const canVote    = isConnected && !isParty && statusStr === 'Voting' && !hasVoted
+  const isResolved = statusStr === 'Resolved'
 
   const handleVote = async (side: 1 | 2 | 3) => {
     if (!isConnected || !pubKey) { addToast('error', 'Connect your Juror ID to vote'); return }
@@ -52,8 +53,8 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
           <h3 className="font-display text-base text-ivory leading-snug line-clamp-2">{dispute.title}</h3>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <StatusPill status={dispute.status} />
-          {dispute.status === 'Voting' && (
+          <StatusPill status={statusStr as any} />
+          {statusStr === 'Voting' && (
             <div className="flex items-center gap-1 text-[10px] font-mono text-muted">
               <Clock size={9} />{timeLeft(dispute.voting_ends)}
             </div>

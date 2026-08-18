@@ -51,7 +51,10 @@ export default function MyDisputes() {
     )
   }
 
-  const filtered = userDisputes.filter(d => filter === 'all' || d.status === filter)
+  const filtered = userDisputes.filter(d => {
+    const statusStr = Array.isArray(d.status) ? d.status[0] : d.status
+    return filter === 'all' || statusStr === filter
+  })
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-20 pt-8">
