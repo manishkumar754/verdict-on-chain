@@ -111,8 +111,7 @@ export async function fileDispute(
   description: string,
   category: string,
   evidence: string,
-  stakePerJuror: number, // in XLM, we convert to stroops
-  votingPeriodSecs: number = 604800
+  stakePerJuror: number // in XLM, we convert to stroops
 ): Promise<string> {
   if (!DISPUTE_COURT_ID) throw new Error('Contract not deployed – VITE_DISPUTE_COURT_ID is not set')
   const args = [
@@ -123,7 +122,6 @@ export async function fileDispute(
     nativeToScVal(category,    { type: 'string' }),
     nativeToScVal(evidence,    { type: 'string' }),
     nativeToScVal(BigInt(stakePerJuror * 10_000_000), { type: 'i128' }),
-    nativeToScVal(BigInt(votingPeriodSecs),            { type: 'u64' }),
   ]
   return invokeContract(DISPUTE_COURT_ID, 'file_dispute', args, pubKey)
 }
