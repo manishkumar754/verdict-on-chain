@@ -115,6 +115,22 @@ jobs:
           TOKEN_ID=$(stellar contract id asset --asset native --network testnet)
           echo "Native Token ID is: $TOKEN_ID"
 
+          echo "Initializing JurorRegistry..."
+          DEPLOYER_PUBKEY=$(stellar keys address deployer)
+          stellar contract invoke --id $REGISTRY_ID --source deployer --network testnet \
+            -- initialize \
+            --admin "$DEPLOYER_PUBKEY" \
+            --court_address "$COURT_ID"
+            
+          echo "Initializing DisputeCourt..."
+          stellar contract invoke --id $COURT_ID --source deployer --network testnet \
+            -- initialize \
+            --admin "$DEPLOYER_PUBKEY" \
+            --registry_address "$REGISTRY_ID" \
+            --token_address "$TOKEN_ID" \
+            --min_stake 100000000 \
+            --vote_period_secs 604800
+
           echo "=== DEPLOYMENT IDS ===" >> $GITHUB_STEP_SUMMARY
           echo "- **JurorRegistry ID**: $REGISTRY_ID" >> $GITHUB_STEP_SUMMARY
           echo "- **DisputeCourt ID**: $COURT_ID" >> $GITHUB_STEP_SUMMARY
