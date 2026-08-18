@@ -27,7 +27,7 @@ export default function Docket() {
       try {
         const total = await m.getTotalDisputes(pubKey || '')
         const fetches = []
-        for (let i = 1; i <= total; i++) {
+        for (let i = 0; i < total; i++) {
           fetches.push(m.getDispute(pubKey || '', i))
         }
         const results = await Promise.all(fetches)
