@@ -1,19 +1,19 @@
 import type { Dispute, JurorProfile } from './store'
 
 export const truncAddr = (a: string, n = 6) => `${a.slice(0,n)}…${a.slice(-4)}`
-export const formatXLM = (stroops: number) =>
-  (stroops / 10_000_000).toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' XLM'
-export const timeLeft = (ts: number) => {
-  const diff = ts - Math.floor(Date.now() / 1000)
+export const formatXLM = (stroops: number | bigint | string) =>
+  (Number(stroops) / 10_000_000).toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' XLM'
+export const timeLeft = (ts: number | bigint | string) => {
+  const diff = Number(ts) - Math.floor(Date.now() / 1000)
   if (diff <= 0) return 'Ended'
   const h = Math.floor(diff / 3600)
   const m = Math.floor((diff % 3600) / 60)
   if (h > 24) return `${Math.floor(h/24)}d ${h%24}h`
   return `${h}h ${m}m`
 }
-export const formatDate = (ts: number) => {
+export const formatDate = (ts: number | bigint | string) => {
   if (!ts) return '—'
-  return new Date(ts * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  return new Date(Number(ts) * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 export const winnerLabel = (side: number) =>
   side === 1 ? 'Claimant' : side === 2 ? 'Respondent' : side === 3 ? 'Tie' : 'Pending'
