@@ -27,6 +27,29 @@ function addr(pubKey: string) {
   return new Address(pubKey).toScVal()
 }
 
+/** 
+ * Recursively converts BigInt to Number and extracts Enum strings.
+ * Soroban SDK returns u64/i128 as BigInt, and enums as { VariantName: undefined }.
+ */
+function normalize(obj: any): any {
+  if (obj === null || obj === undefined) return obj
+  if (typeof obj === 'bigint') return Number(obj)
+  if (Array.isArray(obj)) return obj.map(normalize)
+  if (typeof obj === 'object') {
+    const keys = Object.keys(obj)
+    // If it's a Rust enum without values, scValToNative yields { Variant: undefined } or { Variant: void }
+    if (keys.length === 1 && (obj[keys[0]] === undefined || obj[keys[0]] === null || Array.isArray(obj[keys[0]]) && obj[keys[0]].length === 0)) {
+      return keys[0]
+    }
+    const res: any = {}
+    for (const k of keys) {
+      res[k] = normalize(obj[k])
+    }
+    return res
+  }
+  return obj
+}
+
 /** Build, simulate, sign (via Freighter), and submit a transaction */
 async function invokeContract(
   contractId: string,
@@ -150,7 +173,7 @@ export async function getDispute(pubKey: string, disputeId: number): Promise<Dis
     [nativeToScVal(BigInt(disputeId), { type: 'u64' })],
     pubKey
   )
-  return scValToNative(result) as Dispute
+  return normalize(scValToNative(result)) as Dispute
 }
 
 /** Fetch total number of disputes */
@@ -169,7 +192,7 @@ export async function getUserDisputes(pubKey: string): Promise<Dispute[]> {
     [addr(pubKey)],
     pubKey
   )
-  return scValToNative(result) as Dispute[]
+  return normalize(scValToNative(result)) as Dispute[]
 }
 
 // ─── Contract: JurorRegistry ──────────────────────────────────────────────────
@@ -184,7 +207,7 @@ export async function getJurorProfile(pubKey: string): Promise<JurorProfile | nu
       [addr(pubKey)],
       pubKey
     )
-    return scValToNative(result) as JurorProfile
+    return normalize(scValToNative(result)) as JurorProfile
   } catch {
     // Juror not found — return a default blank profile
     return {
