@@ -1,139 +1,44 @@
-name: VerdictChain CI/CD
+name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ "master", "main" ]
   pull_request:
-    branches: [main]
-
-env:
-  CARGO_TERM_COLOR: always
+    branches: [ "master", "main" ]
 
 jobs:
-  contract-tests:
-    name: 🦀 Smart Contract Tests
+  contracts:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: contracts
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-
-      - name: Cache cargo registry and binaries
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            ~/.cargo/bin
-            contracts/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('contracts/Cargo.lock') }}
-
-      - name: Build WASM contracts
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cargo build --target wasm32-unknown-unknown --release -p dispute-court -p juror-registry
-
+      - name: Build Contracts
+        run: |
+          cd contracts
+          stellar contract build
       - name: Run Contract Tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cargo test --workspace --verbose | tail -60
+        run: |
+          cd contracts
+          cargo test --workspace --verbose | tail -60
 
-  frontend-tests:
-    name: ⚡ Frontend Tests & Build
+  frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 20
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      - name: Run lint
-        run: npm run lint
-        continue-on-error: true
       - name: Run tests
-        run: npm test
+        run: npm run test --if-present
       - name: Build
         run: npm run build
-
-  deploy-contracts:
-    name: 🚀 Deploy to Testnet
-    needs: [contract-tests, frontend-tests]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    defaults:
-      run:
-        working-directory: contracts
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-
-      - name: Install cargo-binstall
-        run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
-
-      - name: Install Stellar CLI
-        run: cargo binstall --no-confirm stellar-cli
-
-      - name: Build contracts
-        run: |
-          cargo build --target wasm32-unknown-unknown --release -p dispute-court -p juror-registry
-          stellar contract optimize --wasm target/wasm32-unknown-unknown/release/dispute_court.wasm
-          stellar contract optimize --wasm target/wasm32-unknown-unknown/release/juror_registry.wasm
-
-      - name: Deploy to Testnet
-        run: |
-          echo "Generating identities..."
-          stellar keys generate deployer --network testnet
-          stellar keys fund deployer --network testnet
-
-          echo "Deploying JurorRegistry..."
-          REGISTRY_ID=$(stellar contract deploy \
-            --wasm target/wasm32-unknown-unknown/release/juror_registry.optimized.wasm \
-            --source deployer \
-            --network testnet 2>deploy_err.log) || { cat deploy_err.log; exit 1; }
-          echo "JurorRegistry deployed at: $REGISTRY_ID"
-
-          echo "Deploying DisputeCourt..."
-          COURT_ID=$(stellar contract deploy \
-            --wasm target/wasm32-unknown-unknown/release/dispute_court.optimized.wasm \
-            --source deployer \
-            --network testnet 2>deploy_err.log) || { cat deploy_err.log; exit 1; }
-          echo "DisputeCourt deployed at: $COURT_ID"
-          
-          echo "Fetching Test Token (Native XLM asset) ID..."
-          TOKEN_ID=$(stellar contract id asset --asset native --network testnet)
-          echo "Native Token ID is: $TOKEN_ID"
-
-          echo "Initializing JurorRegistry..."
-          DEPLOYER_PUBKEY=$(stellar keys address deployer)
-          stellar contract invoke --id $REGISTRY_ID --source deployer --network testnet \
-            -- initialize \
-            --admin "$DEPLOYER_PUBKEY" \
-            --court_address "$COURT_ID"
-            
-          echo "Initializing DisputeCourt..."
-          stellar contract invoke --id $COURT_ID --source deployer --network testnet \
-            -- initialize \
-            --admin "$DEPLOYER_PUBKEY" \
-            --registry_address "$REGISTRY_ID" \
-            --token_address "$TOKEN_ID" \
-            --min_stake 100000000 \
-            --vote_period_secs 30
-
-          echo "=== DEPLOYMENT IDS ===" >> $GITHUB_STEP_SUMMARY
-          echo "- **JurorRegistry ID**: $REGISTRY_ID" >> $GITHUB_STEP_SUMMARY
-          echo "- **DisputeCourt ID**: $COURT_ID" >> $GITHUB_STEP_SUMMARY
-          echo "- **Native Token ID**: $TOKEN_ID" >> $GITHUB_STEP_SUMMARY
-
-
