@@ -1,150 +1,124 @@
-# ⚖ VERDICTCHAIN — Decentralized Dispute Resolution Protocol
+# ⚖️ VerdictChain — Decentralized Dispute Resolution Protocol
 
 > **Community arbitration on Stellar Soroban. Stake your judgment. Earn the truth.**
 
-[![CI/CD](https://github.com/yourusername/verdictchain/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/verdictchain/actions)
+[![CI/CD](https://github.com/aditi-singh-09/VERDICTCHAIN-Decentralized-Dispute-Resolution-Protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/aditi-singh-09/VERDICTCHAIN-Decentralized-Dispute-Resolution-Protocol/actions)
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-7B1D3A?logo=stellar)](https://stellar.expert/explorer/testnet)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-B8892A)](https://verdictchain-decentralized-dispute.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-B8892A.svg)](LICENSE)
 
 ---
 
-## ⚖ What is VerdictChain?
+## 🔗 Links
 
-VerdictChain is a **decentralized arbitration protocol** built on Stellar Soroban, inspired by projects like Kleros but purpose-built for the Stellar ecosystem. Anyone can file a dispute between two parties, and community jurors stake XLM to cast votes. The majority wins; minority jurors forfeit their stake to the winners. Every verdict is immutable, public, and triggers an inter-contract call to update juror reputation scores.
-
-### Why this beats every other submission
-
-| Feature | VerdictChain | Standard Escrow/Vault |
-|---|---|---|
-| Domain | Dispute arbitration | Token storage |
-| Staking mechanics | ✅ Jurors stake to vote | ❌ |
-| Inter-contract call | ✅ Court → Registry on verdict | ❌ |
-| Reputation with accuracy | ✅ Correct/incorrect vote tracking | ❌ |
-| Majority-wins algorithm | ✅ Stake redistribution | ❌ |
-| 7-state dispute machine | ✅ Full lifecycle | ❌ |
+| | |
+|---|---|
+| 🌐 **Live App** | [verdictchain-decentralized-dispute.vercel.app](https://verdictchain-decentralized-dispute.vercel.app/) |
+| 🎥 **Video Demo** | [Watch on Google Drive](https://drive.google.com/file/d/1vNvRBqQhNSnoF4i--b8gei5wmnD2zcqs/view?usp=sharing) |
+| 🔍 **On-chain Tx** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/tx/5f5af0a3c2799b6b3e589ee9f9b59f68084bc0cbc50f7454ed02e6336710e97f) |
 
 ---
 
-## 🏛 Architecture
+## 📸 Screenshots
+
+![VerdictChain Product UI](images/product%20ui.png)
+
+![VerdictChain Mobile UI](images/mobile%20ui.png)
+
+---
+
+## ⚖️ What is VerdictChain?
+
+VerdictChain is a **decentralized arbitration protocol** built on Stellar Soroban. Anyone can file a dispute between two parties. Community jurors stake XLM to cast votes — the majority wins and earns the minority's forfeited stake. Every verdict is immutable, public, and automatically triggers an inter-contract call to update each juror's on-chain reputation score.
+
+### Key Features
+
+| Feature | Description |
+|---|---|
+| 📋 **File Disputes** | Any two parties can open a case with evidence and a juror stake amount |
+| 🗳️ **Juror Staking** | Jurors stake XLM to vote — incentivizing accurate, honest judgment |
+| ⚡ **Stake Redistribution** | Majority winners split the minority's forfeited stakes on finalization |
+| 🏆 **On-chain Reputation** | Juror accuracy tracked across all cases with a 5-tier progression system |
+| 🔗 **Inter-Contract Calls** | DisputeCourt calls JurorRegistry on every verdict to update profiles |
+| 🚀 **CI/CD Pipeline** | Auto-deploys contracts + frontend to Testnet on every push to `main` |
+
+---
+
+## 🏛️ Architecture
 
 ```
-┌───────────────────────────────────────────────────────────────┐
-│                    VERDICTCHAIN PROTOCOL                       │
-│                                                               │
-│  ┌───────────────────────────┐                                │
-│  │       DisputeCourt         │   Inter-contract call         │
-│  │   (Soroban Contract)       │ ─────────────────────────►    │
-│  │                            │                               │
-│  │  file_dispute()            │   record_verdict(             │
-│  │  cast_vote()           ────┼──►   dispute_id,             │
-│  │  finalize_verdict()    ────┼──►   winning_side,           │
-│  │                            │      jurors[],               │
-│  │  [stakes XLM on vote]      │      votes[],                │
-│  │  [redistributes on close]  │      stakes[]                │
-│  └───────────────────────────┘   )                           │
-│                                        │                      │
-│  Dispute lifecycle:            ┌───────▼──────────────┐      │
-│  Voting → Resolved             │   JurorRegistry       │      │
-│         → Cancelled            │   (Soroban Contract)  │      │
-│                                │                       │      │
-│                                │  get_juror()          │      │
-│                                │  accuracy tracking    │      │
-│                                │  tier: Observer →     │      │
-│                                │  ChiefJustice         │      │
-│                                └───────────────────────┘      │
-│                                                               │
-│  ┌──────────────────────────────────────────────────────┐    │
-│  │       React 18 + TypeScript Frontend                  │    │
-│  │  Docket │ File Case │ My Cases │ Juror ID             │    │
-│  │  Judicial dark aesthetic · Brass + Burgundy           │    │
-│  └──────────────────────────────────────────────────────┘    │
-└───────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                  VERDICTCHAIN PROTOCOL                │
+│                                                      │
+│  ┌─────────────────────┐   inter-contract call       │
+│  │    DisputeCourt      │ ─────────────────────────► │
+│  │  file_dispute()      │   JurorRegistry             │
+│  │  cast_vote()         │   record_verdict()          │
+│  │  finalize_verdict()  │   get_juror()               │
+│  └─────────────────────┘   tier & accuracy tracking  │
+│                                                      │
+│  ┌──────────────────────────────────────────────┐   │
+│  │   React 18 + TypeScript + Vite Frontend       │   │
+│  │   Docket · File Case · My Cases · Juror ID    │   │
+│  └──────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 📜 Smart Contracts
 
-### `dispute-court` — The Arbitration Engine
+### `dispute-court`
 
 | Function | Description |
 |---|---|
 | `initialize(admin, registry, token, min_stake, vote_period)` | One-time setup |
 | `file_dispute(claimant, respondent, title, desc, category, evidence, stake)` | File a new dispute |
 | `cast_vote(juror, dispute_id, side)` | Stake XLM and vote (1=claimant, 2=respondent, 3=abstain) |
-| `finalize_verdict(caller, dispute_id)` | Close voting, distribute stakes, **call JurorRegistry** |
-| `get_dispute(id)` | Fetch full dispute |
-| `get_vote(dispute_id, juror)` | Fetch a juror's vote |
+| `finalize_verdict(caller, dispute_id)` | Close voting, redistribute stakes, call JurorRegistry |
 
 **Stake distribution on verdict:**
 ```
-winner_bonus = loser_pool / winner_count
-majority juror payout = stake + winner_bonus
-minority juror payout = 0 (forfeited)
-tie payout           = stake (returned)
+majority juror payout = stake + (loser_pool / winner_count)
+minority juror payout = 0  (forfeited)
+tie payout            = stake returned to all
 ```
 
-### `juror-registry` — The Reputation Ledger
+### `juror-registry`
 
 Only callable by `DisputeCourt` via inter-contract authentication.
 
-| Function | Caller | Description |
-|---|---|---|
-| `record_verdict(dispute_id, winning_side, jurors, votes, stakes)` | DisputeCourt | Updates all juror profiles |
-| `get_juror(address)` | Anyone | Full juror profile |
-| `get_verdict_record(dispute_id)` | Anyone | Stored verdict summary |
-
-**Reputation formula:**
-```
-Correct majority vote: +100 + accuracy_bonus (0–50)
-Abstain:               +15
-Incorrect minority:     0 pts + penalty
-Tie verdict:           +30 (everyone)
-
-accuracy_bonus = min(floor(correct_rate% / 10) × 5, 50)
-minority_penalty = min(incorrect_count × 15, 100)
-reputation = max(0, reputation)   ← floor at 0
-```
+| Function | Description |
+|---|---|
+| `record_verdict(dispute_id, winning_side, jurors, votes, stakes)` | Updates all juror profiles after a verdict |
+| `get_juror(address)` | Returns a full juror profile |
 
 **Juror Tiers:**
-| Tier | Score | Glyph |
-|---|---|---|
-| Observer | 0–149 | ○ |
-| Associate | 150–349 | ◎ |
-| Adjudicator | 350–699 | ⚖ |
-| Senior Counsel | 700–1099 | ⚖⚖ |
-| Chief Justice | 1100+ | ✦ |
+| Tier | Score |
+|---|---|
+| Observer | 0 – 149 |
+| Associate | 150 – 349 |
+| Adjudicator | 350 – 699 |
+| Senior Counsel | 700 – 1099 |
+| Chief Justice | 1100+ |
 
 ---
 
 ## 🚀 Quick Start
 
 ```bash
-# Install Rust
+# Install Rust + Soroban target
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 rustup target add wasm32-unknown-unknown
 
-# Install Soroban CLI
-cargo install soroban-cli --features opt
+# Run contract tests
+cd contracts && cargo test --workspace
 
-# Frontend
+# Run frontend
 cd frontend && npm install && npm run dev
-```
 
-### One-command deploy
-
-```bash
+# Deploy contracts (one-command)
 chmod +x scripts/deploy.sh && ./scripts/deploy.sh
-```
-
-### Tests
-
-```bash
-# Rust contract tests
-cd contracts && cargo test --features testutils -- --nocapture
-
-# Frontend tests
-cd frontend && npm test
 ```
 
 ---
@@ -153,126 +127,53 @@ cd frontend && npm test
 
 ```
 verdictchain/
-├── .github/workflows/ci.yml       # Full CI/CD pipeline
+├── .github/workflows/ci.yml        # CI/CD: test → build → deploy to Testnet
 ├── contracts/
-│   ├── Cargo.toml
-│   ├── dispute-court/src/
-│   │   ├── lib.rs                 # Voting, staking, stake redistribution
-│   │   └── test.rs                # 12 unit tests
-│   └── juror-registry/src/
-│       ├── lib.rs                 # Accuracy tracking, tier system
-│       └── test.rs                # 9 unit tests
+│   ├── dispute-court/src/lib.rs    # Voting, staking, stake redistribution
+│   └── juror-registry/src/lib.rs  # Reputation, accuracy tracking, tier system
 ├── frontend/src/
-│   ├── components/                # ScalesIcon, TierBadge, StatusPill, VoteBar, DisputeCard, Nav
-│   ├── pages/                     # Docket, FileCase, MyDisputes, JurorProfile
-│   ├── lib/                       # store, constants, mockData
-│   ├── styles/globals.css         # Judicial burgundy + brass aesthetic
-│   └── test/verdictchain.test.tsx # 45+ Vitest cases
-├── scripts/deploy.sh
-└── README.md
+│   ├── components/                 # DisputeCard, VoteBar, StatusPill, TierBadge, Nav
+│   ├── pages/                      # Docket, FileCase, MyDisputes, JurorProfile
+│   └── lib/                        # soroban.ts, store, constants, wallet
+├── images/                         # Screenshots
+└── scripts/deploy.sh
 ```
 
 ---
 
-## 🧪 Test Coverage
+## 🧪 Tests
 
-### Rust — 21 total
+![CI/CD Pipeline](images/cic%20cd.png)
 
-**`dispute-court`** (12 tests):
-- `test_initialize`
-- `test_file_dispute`
-- `test_cast_vote_locks_stake`
-- `test_multiple_jurors_vote`
-- `test_vote_for_respondent`
-- `test_abstain_vote`
-- `test_get_vote_record`
-- `test_user_dispute_list`
-- `test_dispute_jurors_list`
-- `test_self_dispute_fails`
-- `test_party_cannot_vote`
-- `test_double_vote_fails`
+![Test Output](images/test%20output.png)
 
-**`juror-registry`** (9 tests):
-- `test_initialize`
-- `test_record_verdict_majority_win`
-- `test_tier_progression` — all 5 tiers
-- `test_accuracy_bonus_increases_with_correct_votes`
-- `test_minority_penalty_escalates`
-- `test_reputation_never_underflows`
-- `test_abstain_gives_small_points`
-- `test_tie_verdict_gives_base_points`
-- `test_multiple_disputes_accumulate_reputation`
-- `test_verdict_record_stored`
+**Smart Contracts (Rust)** — 21 total
+- `dispute-court`: 12 tests (file dispute, cast vote, stake locking, finalize verdict, edge cases)
+- `juror-registry`: 9 tests (reputation scoring, tier progression, accuracy bonuses, penalties)
 
-### Frontend (Vitest) — 45+ cases
-- `truncAddr`, `formatXLM`, `timeLeft`, `winnerLabel`, `formatDate` utilities
-- `MOCK_DISPUTES` integrity (6 tests including vote sum validation)
-- `MOCK_JURORS` sort order and validity
-- `JUROR_TIER_META` structure, ascending mins
-- `DISPUTE_STATUS_META` completeness
-- `VOTE_OPTIONS` structure
-- Reputation scoring algorithm (8 tests)
-- Majority verdict logic (5 tests)
-- Stake distribution logic (4 tests)
-- `TierBadge` component (4 tests)
-- `StatusPill` component (3 tests)
-- `VoteBar` component (3 tests)
-
----
-
-## 🎨 Design System — "The Dark Court"
-
-| Token | Value | Usage |
-|---|---|---|
-| `bench` | `#0A0608` | Page background |
-| `chamber` | `#120C10` | Deep fills |
-| `burgundy` | `#7B1D3A` | Primary accent, respondent side |
-| `brass` | `#B8892A` | Gold, claimant side, CTAs |
-| `ivory` | `#EDE8DC` | Primary text |
-| `parchment` | `#D4C9B0` | Secondary text |
-
-Signature elements:
-- **Court texture** — diagonal crosshatch CSS pattern across full page
-- **Animated scales SVG** — left and right pans sway in opposite directions
-- **Case cards** — brass corner bracket ornaments on every dispute card
-- **Verdict stamps** — rotated `CLAIMANT PREVAILS` / `RESPONDENT PREVAILS` seals
-- **VoteBar** — color-coded claimant/respondent/abstain proportional bar
+**Frontend (Vitest)** — 63 tests
+- Utility functions, mock data integrity, component rendering, reputation algorithm, stake distribution logic
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-```
-push to main
-    │
-    ├── 🦀 contract-tests
-    │   ├── cargo fmt + clippy
-    │   ├── cargo test dispute-court (12 tests)
-    │   ├── cargo test juror-registry (9 tests)
-    │   └── wasm build + optimize
-    │
-    ├── ⚡ frontend-tests
-    │   ├── eslint
-    │   ├── vitest (45+ tests)
-    │   └── vite build
-    │
-    └── 🚀 deploy (main only)
-        ├── Deploy JurorRegistry
-        ├── Deploy DisputeCourt
-        ├── Initialize with cross-references + native XLM token
-        └── vercel --prod
-```
+Every push to `main` automatically:
+1. 🦀 Runs all Rust contract tests
+2. ⚡ Runs frontend lint, Vitest tests, and Vite build
+3. 🚀 Deploys both Soroban contracts to Stellar Testnet
+4. 🔗 Initializes contracts with cross-references and native XLM token
 
 ---
 
-## 🔗 Deployed Contracts
+## 🔗 Deployed Contracts (Testnet)
 
 | Contract | Address |
 |---|---|
-| DisputeCourt | `See deployment/testnet.json` |
-| JurorRegistry | `See deployment/testnet.json` |
+| **DisputeCourt** | `CDSJ2G3EYVB76KG5332VRYC3KW2DKN6TSV5G56G2E6VN6THNN432PJUM` |
+| **JurorRegistry** | `CBX7A3ZWUM62XQZU5TP5CJGAZWUIX64Y4SNUFJGO5PJO7564DSEINNAR` |
 
-→ [Stellar Expert Testnet Explorer](https://stellar.expert/explorer/testnet)
+→ [View on Stellar Expert Explorer](https://stellar.expert/explorer/testnet)
 
 ---
 
@@ -282,5 +183,4 @@ MIT © 2024 VerdictChain
 
 ---
 
-*Built for the Stellar Hackathon — Level 3 Orange Belt.*  
-*"On-chain justice, staked on truth."*
+*Built for the Stellar Hackathon · "On-chain justice, staked on truth."*
