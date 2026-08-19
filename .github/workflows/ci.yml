@@ -129,7 +129,7 @@ jobs:
             --registry_address "$REGISTRY_ID" \
             --token_address "$TOKEN_ID" \
             --min_stake 100000000 \
-            --vote_period_secs 604800
+            --vote_period_secs 30
 
           echo "=== DEPLOYMENT IDS ===" >> $GITHUB_STEP_SUMMARY
           echo "- **JurorRegistry ID**: $REGISTRY_ID" >> $GITHUB_STEP_SUMMARY
