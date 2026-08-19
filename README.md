@@ -2,7 +2,7 @@
 
 > **Community arbitration on Stellar Soroban. Stake your judgment. Earn the truth.**
 
-[![CI/CD](https://github.com/aditi-singh-09/VERDICTCHAIN-Decentralized-Dispute-Resolution-Protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/aditi-singh-09/VERDICTCHAIN-Decentralized-Dispute-Resolution-Protocol/actions)
+[![CI/CD](https://github.com/manishkumar754/Verdict-on-Chain-Decentralized-Dispute-Resolution-Protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/manishkumar754/Verdict-on-Chain-Decentralized-Dispute-Resolution-Protocol/actions)
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-7B1D3A?logo=stellar)](https://stellar.expert/explorer/testnet)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-B8892A)](https://verdictchain-decentralized-dispute.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-B8892A.svg)](LICENSE)
@@ -170,8 +170,8 @@ Every push to `main` automatically:
 
 | Contract | Address |
 |---|---|
-| **DisputeCourt** | `CDSJ2G3EYVB76KG5332VRYC3KW2DKN6TSV5G56G2E6VN6THNN432PJUM` |
-| **JurorRegistry** | `CBX7A3ZWUM62XQZU5TP5CJGAZWUIX64Y4SNUFJGO5PJO7564DSEINNAR` |
+| **DisputeCourt** | `CDKVIMOPH2M27VVSASEVVU4LT7USKLOTOSNDIBVOYVOHBTLAJWNYXWWM` |
+| **JurorRegistry** | `CAXXHMPLZQEUJOEFALK6ZR32UDEU6TA5X4ACLIVRPO2GZSP7IB26TXJ5` |
 
 → [View on Stellar Expert Explorer](https://stellar.expert/explorer/testnet)
 
