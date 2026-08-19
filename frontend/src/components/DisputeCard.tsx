@@ -16,7 +16,8 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
 
   const statusStr  = Array.isArray(dispute.status) ? dispute.status[0] : dispute.status
   const isParty    = pubKey === dispute.claimant || pubKey === dispute.respondent
-  const canVote    = isConnected && !isParty && statusStr === 'Voting' && !hasVoted
+  const isExpired  = Math.floor(Date.now() / 1000) > Number(dispute.voting_ends)
+  const canVote    = isConnected && !isParty && statusStr === 'Voting' && !hasVoted && !isExpired
   const isResolved = statusStr === 'Resolved'
 
   const handleVote = async (side: 1 | 2 | 3) => {
@@ -163,6 +164,12 @@ export default function DisputeCard({ dispute, compact = false }: { dispute: Dis
       {hasVoted && (
         <div className="pt-3 border-t border-white/[0.05] text-center text-xs text-muted font-mono">
           ✓ Vote recorded on-chain
+        </div>
+      )}
+
+      {!compact && !isResolved && isExpired && statusStr === 'Voting' && (
+        <div className="pt-3 border-t border-white/[0.05] text-center text-xs text-brass font-mono">
+          Voting period ended. Awaiting finalization.
         </div>
       )}
     </div>
