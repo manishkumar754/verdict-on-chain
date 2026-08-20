@@ -15,7 +15,7 @@
 |---|---|
 | 🌐 **Live App** | [verdictonchain.vercel.app](https://verdictonchain.vercel.app/) |
 | 🎥 **Video Demo** | [Watch on Google Drive](https://drive.google.com/file/d/1vNvRBqQhNSnoF4i--b8gei5wmnD2zcqs/view?usp=sharing) |
-| 🔍 **On-chain Tx** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/tx/5f5af0a3c2799b6b3e589ee9f9b59f68084bc0cbc50f7454ed02e6336710e97f) |
+| 🔍 **On-chain Tx** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/tx/845f6e65466ec093f7b000b5ba0946847a614605f821226969f385f836bb2de6) |
 
 ---
 
