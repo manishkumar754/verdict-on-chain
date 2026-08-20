@@ -4,7 +4,7 @@
 
 [![CI/CD](https://github.com/manishkumar754/verdict-on-chain/actions/workflows/ci.yml/badge.svg)](https://github.com/manishkumar754/verdict-on-chain/actions)
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-7B1D3A?logo=stellar)](https://stellar.expert/explorer/testnet)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-B8892A)](https://verdict-omega.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-B8892A)](https://verdictonchain.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-B8892A.svg)](LICENSE)
 
 ---
@@ -13,7 +13,7 @@
 
 | | |
 |---|---|
-| 🌐 **Live App** | [verdict-omega.vercel.app](https://verdict-omega.vercel.app/) |
+| 🌐 **Live App** | [verdictonchain.vercel.app](https://verdictonchain.vercel.app/) |
 | 🎥 **Video Demo** | [Watch on Google Drive](https://drive.google.com/file/d/1vNvRBqQhNSnoF4i--b8gei5wmnD2zcqs/view?usp=sharing) |
 | 🔍 **On-chain Tx** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/tx/5f5af0a3c2799b6b3e589ee9f9b59f68084bc0cbc50f7454ed02e6336710e97f) |
 
