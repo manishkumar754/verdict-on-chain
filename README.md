@@ -2,7 +2,7 @@
 
 > **Community arbitration on Stellar Soroban. Stake your judgment. Earn the truth.**
 
-[![CI/CD](https://github.com/manishkumar754/Verdict-on-Chain-Decentralized-Dispute-Resolution-Protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/manishkumar754/Verdict-on-Chain-Decentralized-Dispute-Resolution-Protocol/actions)
+[![CI/CD](https://github.com/manishkumar754/verdict-on-chain/actions/workflows/ci.yml/badge.svg)](https://github.com/manishkumar754/verdict-on-chain/actions)
 [![Stellar Testnet](https://img.shields.io/badge/Stellar-Testnet-7B1D3A?logo=stellar)](https://stellar.expert/explorer/testnet)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-B8892A)](https://verdict-omega.vercel.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-B8892A.svg)](LICENSE)
