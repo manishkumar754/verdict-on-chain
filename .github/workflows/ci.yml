@@ -22,7 +22,7 @@ jobs:
       - name: Build Contracts
         run: |
           cd contracts
-          stellar contract build
+          cargo build --target wasm32-unknown-unknown --release
       - name: Run Contract Tests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
