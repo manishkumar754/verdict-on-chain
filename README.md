@@ -25,6 +25,10 @@
 
 ![VerdictChain Mobile UI](images/mobile%20ui.png)
 
+![CI/CD Pipeline](images/cic%20cd.png)
+
+![Test Output](images/test%20output.png)
+
 ---
 
 ## ⚖️ What is VerdictChain?
@@ -142,10 +146,6 @@ verdictchain/
 ---
 
 ## 🧪 Tests
-
-![CI/CD Pipeline](images/cic%20cd.png)
-
-![Test Output](images/test%20output.png)
 
 **Smart Contracts (Rust)** — 21 total
 - `dispute-court`: 12 tests (file dispute, cast vote, stake locking, finalize verdict, edge cases)
