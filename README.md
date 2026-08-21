@@ -19,6 +19,17 @@
 
 ---
 
+## 🔗 Deployed Contracts (Testnet)
+
+| Contract | Address |
+|---|---|
+| **DisputeCourt** | `CDKVIMOPH2M27VVSASEVVU4LT7USKLOTOSNDIBVOYVOHBTLAJWNYXWWM` |
+| **JurorRegistry** | `CAXXHMPLZQEUJOEFALK6ZR32UDEU6TA5X4ACLIVRPO2GZSP7IB26TXJ5` |
+
+→ [View on Stellar Expert Explorer](https://stellar.expert/explorer/testnet)
+
+---
+
 ## 📸 Screenshots
 
 ![VerdictChain Homepage](images/homepage.png)
@@ -166,16 +177,6 @@ Every push to `main` automatically:
 
 ---
 
-## 🔗 Deployed Contracts (Testnet)
-
-| Contract | Address |
-|---|---|
-| **DisputeCourt** | `CDKVIMOPH2M27VVSASEVVU4LT7USKLOTOSNDIBVOYVOHBTLAJWNYXWWM` |
-| **JurorRegistry** | `CAXXHMPLZQEUJOEFALK6ZR32UDEU6TA5X4ACLIVRPO2GZSP7IB26TXJ5` |
-
-→ [View on Stellar Expert Explorer](https://stellar.expert/explorer/testnet)
-
----
 
 ## 📄 License
 
