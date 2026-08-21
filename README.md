@@ -26,7 +26,7 @@
 | **DisputeCourt** | `CDKVIMOPH2M27VVSASEVVU4LT7USKLOTOSNDIBVOYVOHBTLAJWNYXWWM` |
 | **JurorRegistry** | `CAXXHMPLZQEUJOEFALK6ZR32UDEU6TA5X4ACLIVRPO2GZSP7IB26TXJ5` |
 
-→ [View on Stellar Expert Explorer](https://stellar.expert/explorer/testnet)
+→ [View DisputeCourt on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDKVIMOPH2M27VVSASEVVU4LT7USKLOTOSNDIBVOYVOHBTLAJWNYXWWM)
 
 ---
 
