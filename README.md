@@ -21,11 +21,11 @@
 
 ## 📸 Screenshots
 
-![VerdictChain Product UI](images/product%20ui.png)
+![VerdictChain Homepage](images/homepage.png)
 
 ![VerdictChain Mobile UI](images/mobile%20ui.png)
 
-![CI/CD Pipeline](images/cic%20cd.png)
+![CI/CD Pipeline](images/ci%20cd.png)
 
 ![Test Output](images/test%20output.png)
 
